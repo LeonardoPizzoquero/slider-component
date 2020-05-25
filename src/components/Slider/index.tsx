@@ -1,20 +1,36 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 
-import { Container, ArrowLeft, ArrowRight, Image } from './styles';
+import {
+  Container,
+  ArrowLeft,
+  ArrowRight,
+  Image,
+  Bullets,
+  Bullet,
+} from './styles';
 
 interface Obj {
   id: number;
   url: string;
 }
 
+type Images = Obj[];
+
 interface Props {
   imageList: Obj[];
   duration?: number;
+  controls?: boolean;
+  bullets?: boolean;
 }
 
-const Slider: React.FC<Props> = ({ imageList = [], duration = 5000 }) => {
-  const [images, setImages] = useState(imageList);
+const Slider: React.FC<Props> = ({
+  imageList = [],
+  duration = 5000,
+  controls = true,
+  bullets = true,
+}) => {
+  const [images, setImages] = useState<Images>(imageList);
 
   const isEmpty = useMemo(() => images.length > 0, [images]);
   const imageListLength = useMemo(() => images.length - 1, [images]);
@@ -26,23 +42,33 @@ const Slider: React.FC<Props> = ({ imageList = [], duration = 5000 }) => {
     else setCurrentImage(currentImage + 1);
   }, [currentImage, imageListLength]);
 
-  function prevImage(): void {
+  const prevImage = useCallback(() => {
     if (currentImage <= 0) setCurrentImage(imageListLength);
     else setCurrentImage(currentImage - 1);
-  }
+  }, [currentImage, imageListLength]);
+
+  const handleSetImage = useCallback((index) => {
+    setCurrentImage(index);
+  }, []);
 
   useEffect(() => {
-    setTimeout(nextImage, duration);
+    const timer = setTimeout(nextImage, duration);
+
+    return () => clearTimeout(timer);
   }, [duration, nextImage]);
 
   return (
     <Container>
-      <ArrowLeft onClick={prevImage}>
-        <FiChevronLeft size={100} color="#ddd" />
-      </ArrowLeft>
-      <ArrowRight onClick={nextImage}>
-        <FiChevronRight size={100} color="#ddd" />
-      </ArrowRight>
+      {controls && (
+        <>
+          <ArrowLeft onClick={prevImage}>
+            <FiChevronLeft size={100} color="#ddd" />
+          </ArrowLeft>
+          <ArrowRight onClick={nextImage}>
+            <FiChevronRight size={100} color="#ddd" />
+          </ArrowRight>
+        </>
+      )}
 
       {isEmpty &&
         images.map((image, index) => {
@@ -56,6 +82,22 @@ const Slider: React.FC<Props> = ({ imageList = [], duration = 5000 }) => {
             />
           );
         })}
+
+      {bullets && (
+        <Bullets>
+          <div>
+            {isEmpty &&
+              images.map((image, index) => {
+                return (
+                  <Bullet
+                    onClick={() => handleSetImage(index)}
+                    key={image.id}
+                  />
+                );
+              })}
+          </div>
+        </Bullets>
+      )}
     </Container>
   );
 };

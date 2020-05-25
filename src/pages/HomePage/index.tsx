@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
 
   return (
     <Container>
-      <Slider imageList={images} duration={3000} />
+      <Slider controls bullets duration={5000} imageList={images} />
     </Container>
   );
 };
